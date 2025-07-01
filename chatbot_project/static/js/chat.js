@@ -10,10 +10,10 @@ class ChatApp {
         this.sendBtn = document.getElementById('sendBtn');
         this.typingIndicator = document.getElementById('typingIndicator');
         this.loadingScreen = document.getElementById('loadingScreen');
-        
+
         this.init();
     }
-    
+
     init() {
         console.log('🚚 FastDelivery Express Chatbot initializing...');
         this.setupEventListeners();
@@ -21,7 +21,7 @@ class ChatApp {
         this.hideLoadingScreen();
         this.fixInitialLayout();
     }
-    
+
     fixInitialLayout() {
         // Pastikan modal tersembunyi
         const modal = document.getElementById('ratingModal');
@@ -29,10 +29,10 @@ class ChatApp {
             modal.classList.remove('show');
             modal.style.display = 'none';
         }
-        
+
         // Fix body overflow
         document.body.style.overflow = '';
-        
+
         // Center layout fixes
         const appContainer = document.querySelector('.app-container');
         if (appContainer) {
@@ -41,14 +41,14 @@ class ChatApp {
             appContainer.style.justifyContent = 'center';
             appContainer.style.minHeight = '100vh';
         }
-        
+
         const chatWrapper = document.querySelector('.chat-wrapper');
         if (chatWrapper) {
             chatWrapper.style.margin = '0 auto';
             chatWrapper.style.maxWidth = '1400px';
         }
     }
-    
+
     setupEventListeners() {
         // Send message on Enter key
         if (this.messageInput) {
@@ -59,12 +59,12 @@ class ChatApp {
                 }
             });
         }
-        
+
         // Send button click
         if (this.sendBtn) {
             this.sendBtn.addEventListener('click', () => this.sendMessage());
         }
-        
+
         // ESC key untuk close modal
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -72,28 +72,60 @@ class ChatApp {
             }
         });
     }
-    
+
     setupRatingModal() {
-        const ratingStars = document.querySelectorAll('#ratingStars i');
-        ratingStars.forEach((star, index) => {
-            star.addEventListener('click', () => {
-                this.currentRating = index + 1;
+        console.log('🌟 Setting up rating modal...');
+
+        // Setup rating stars dengan event delegation
+        const ratingStarsContainer = document.getElementById('ratingStars');
+        if (ratingStarsContainer) {
+            console.log('✅ Rating stars container found');
+
+            // Remove existing event listeners
+            ratingStarsContainer.replaceWith(ratingStarsContainer.cloneNode(true));
+
+            // Get the new container after replacing
+            const newRatingStarsContainer = document.getElementById('ratingStars');
+
+            // Add click events untuk setiap star
+            const stars = newRatingStarsContainer.querySelectorAll('i[data-rating]');
+            console.log(`Found ${stars.length} rating stars`);
+
+            stars.forEach((star, index) => {
+                const rating = parseInt(star.getAttribute('data-rating'));
+                console.log(`Setting up star ${index + 1} with rating ${rating}`);
+
+                // Click event
+                star.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    this.currentRating = rating;
+                    console.log(`⭐ Rating selected: ${this.currentRating}`);
+
+                    this.updateRatingStars();
+                    this.showRatingFeedback(rating);
+                });
+
+                // Hover event
+                star.addEventListener('mouseenter', (e) => {
+                    this.highlightStars(rating);
+                });
+
+                // Make sure star is clickable
+                star.style.cursor = 'pointer';
+                star.style.userSelect = 'none';
+            });
+
+            // Mouse leave event
+            newRatingStarsContainer.addEventListener('mouseleave', () => {
                 this.updateRatingStars();
             });
-            
-            star.addEventListener('mouseenter', () => {
-                this.highlightStars(index + 1);
-            });
-        });
-        
-        const ratingContainer = document.getElementById('ratingStars');
-        if (ratingContainer) {
-            ratingContainer.addEventListener('mouseleave', () => {
-                this.updateRatingStars();
-            });
+        } else {
+            console.error('❌ Rating stars container not found');
         }
-        
-        // Close modal when clicking outside
+
+        // Setup modal click outside to close
         const modal = document.getElementById('ratingModal');
         if (modal) {
             modal.addEventListener('click', (e) => {
@@ -103,7 +135,7 @@ class ChatApp {
             });
         }
     }
-    
+
     hideLoadingScreen() {
         if (this.loadingScreen) {
             setTimeout(() => {
@@ -114,26 +146,26 @@ class ChatApp {
             }, 1500);
         }
     }
-    
+
     async sendMessage() {
         if (!this.messageInput || !this.messagesContainer) {
             console.error('❌ Required elements not found');
             return;
         }
-        
+
         const message = this.messageInput.value.trim();
         if (!message || this.isTyping) return;
-        
+
         console.log('📤 Sending message:', message);
-        
+
         // Add user message to chat UI
         this.addMessage(message, 'user');
         this.messageInput.value = '';
         this.messageInput.style.height = 'auto';
-        
+
         // Show typing indicator
         this.showTypingIndicator();
-        
+
         try {
             const response = await fetch('/api/send-message/', {
                 method: 'POST',
@@ -146,26 +178,26 @@ class ChatApp {
                     session_id: this.sessionId
                 })
             });
-            
+
             const data = await response.json();
-            
+
             if (response.ok && data.status === 'success') {
                 this.sessionId = data.session_id;
-                
+
                 // Realistic typing delay
                 const typingDelay = Math.min(Math.max(data.response.length * 30, 1000), 3000);
-                
+
                 setTimeout(() => {
                     this.hideTypingIndicator();
                     this.addMessage(data.response, 'bot');
-                    
+
                     // Check if response contains rating request - tapi jangan auto-show modal
-                    if (data.response.toLowerCase().includes('rating') || 
+                    if (data.response.toLowerCase().includes('rating') ||
                         data.response.toLowerCase().includes('bintang')) {
                         setTimeout(() => this.showRatingPrompt(), 1000);
                     }
                 }, typingDelay);
-                
+
                 console.log('✅ Message sent successfully');
             } else {
                 this.hideTypingIndicator();
@@ -178,7 +210,7 @@ class ChatApp {
         } catch (error) {
             this.hideTypingIndicator();
             console.error('❌ Network error:', error);
-            
+
             const fallbackMessage = `🔌 **Koneksi Bermasalah**
             
 Sepertinya ada masalah koneksi. Silakan:
@@ -187,52 +219,52 @@ Sepertinya ada masalah koneksi. Silakan:
 3. 📞 Hubungi 1500-888 jika masalah berlanjut
 
 Maaf atas ketidaknyamanan ini. 🙏`;
-            
+
             this.addMessage(fallbackMessage, 'bot');
             this.showToast('Koneksi Error', 'Periksa koneksi internet Anda', 'error');
         }
     }
-    
+
     addMessage(content, sender) {
         if (!this.messagesContainer) return;
-        
+
         // Remove welcome message if exists
         const welcomeMessage = document.querySelector('.welcome-message');
         if (welcomeMessage && sender === 'user') {
             welcomeMessage.style.animation = 'fadeOut 0.3s ease';
             setTimeout(() => welcomeMessage.remove(), 300);
         }
-        
+
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${sender}`;
-        
+
         const avatar = document.createElement('div');
         avatar.className = 'message-avatar';
-        avatar.innerHTML = sender === 'user' ? 
-            '<i class="fas fa-user"></i>' : 
+        avatar.innerHTML = sender === 'user' ?
+            '<i class="fas fa-user"></i>' :
             '<i class="fas fa-robot"></i>';
-        
+
         const messageContent = document.createElement('div');
         messageContent.className = 'message-content';
-        
+
         // Format message content
         const formattedContent = this.formatMessage(content);
         messageContent.innerHTML = formattedContent;
-        
+
         const messageTime = document.createElement('div');
         messageTime.className = 'message-time';
         messageTime.textContent = new Date().toLocaleTimeString('id-ID', {
             hour: '2-digit',
             minute: '2-digit'
         });
-        
+
         messageDiv.appendChild(avatar);
         messageDiv.appendChild(messageContent);
         messageContent.appendChild(messageTime);
-        
+
         this.messagesContainer.appendChild(messageDiv);
         this.scrollToBottom();
-        
+
         // Add entrance animation
         messageDiv.style.opacity = '0';
         messageDiv.style.transform = 'translateY(20px)';
@@ -242,25 +274,25 @@ Maaf atas ketidaknyamanan ini. 🙏`;
             messageDiv.style.transform = 'translateY(0)';
         }, 50);
     }
-    
+
     formatMessage(content) {
         let formatted = content
             .replace(/\n/g, '<br>')
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .replace(/`(.*?)`/g, '<code>$1</code>');
-        
+
         // Format tracking numbers
-        formatted = formatted.replace(/([A-Z]{2,3}[0-9]{8,12})/g, 
+        formatted = formatted.replace(/([A-Z]{2,3}[0-9]{8,12})/g,
             '<span class="tracking-number">$1</span>');
-        
+
         // Format phone numbers
-        formatted = formatted.replace(/(1500-\d{3}|\d{4}-\d{3})/g, 
+        formatted = formatted.replace(/(1500-\d{3}|\d{4}-\d{3})/g,
             '<span style="font-weight: bold; color: #667eea;">$1</span>');
-        
+
         return formatted;
     }
-    
+
     showTypingIndicator() {
         this.isTyping = true;
         if (this.typingIndicator) {
@@ -268,14 +300,14 @@ Maaf atas ketidaknyamanan ini. 🙏`;
             this.scrollToBottom();
         }
     }
-    
+
     hideTypingIndicator() {
         this.isTyping = false;
         if (this.typingIndicator) {
             this.typingIndicator.classList.remove('show');
         }
     }
-    
+
     scrollToBottom() {
         if (this.messagesContainer) {
             setTimeout(() => {
@@ -286,7 +318,7 @@ Maaf atas ketidaknyamanan ini. 🙏`;
             }, 100);
         }
     }
-    
+
     showRatingPrompt() {
         // Show rating buttons in chat instead of modal popup
         const ratingPrompt = `⭐ **Berikan Rating Pelayanan**
@@ -302,30 +334,45 @@ Bagaimana pengalaman Anda dengan layanan kami?
 </div>
 
 Atau <button onclick="chatApp.showRatingModal()" class="text-link">buka form rating lengkap</button> untuk memberikan komentar.`;
-        
+
         this.addMessage(ratingPrompt, 'bot');
     }
-    
+
     showRatingModal() {
+        console.log('🎭 Opening rating modal...');
+
         const modal = document.getElementById('ratingModal');
         if (modal) {
-            modal.style.display = 'flex';
-            modal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-            
-            // Reset rating
+            // Reset rating state
             this.currentRating = 0;
             this.updateRatingStars();
-            
+
             // Clear comment
             const comment = document.getElementById('ratingComment');
             if (comment) {
                 comment.value = '';
             }
+
+            // Clear feedback
+            const feedback = document.getElementById('ratingFeedback');
+            if (feedback) {
+                feedback.style.opacity = '0';
+            }
+
+            // Show modal
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            console.log('✅ Modal opened, rating reset to 0');
+        } else {
+            console.error('❌ Modal not found');
         }
     }
-    
+
     closeRatingModal() {
+        console.log('🎭 Closing rating modal...');
+
         const modal = document.getElementById('ratingModal');
         if (modal) {
             modal.classList.remove('show');
@@ -333,41 +380,109 @@ Atau <button onclick="chatApp.showRatingModal()" class="text-link">buka form rat
                 modal.style.display = 'none';
             }, 300);
             document.body.style.overflow = '';
+
+            // Reset rating
             this.currentRating = 0;
             this.updateRatingStars();
-            
+
+            // Clear comment
             const comment = document.getElementById('ratingComment');
             if (comment) {
                 comment.value = '';
             }
+
+            // Clear feedback
+            const feedback = document.getElementById('ratingFeedback');
+            if (feedback) {
+                feedback.style.opacity = '0';
+            }
+
+            console.log('✅ Modal closed and reset');
         }
     }
-    
+
     updateRatingStars() {
         const stars = document.querySelectorAll('#ratingStars i');
+        console.log(`Updating ${stars.length} stars, current rating: ${this.currentRating}`);
+
         stars.forEach((star, index) => {
-            if (index < this.currentRating) {
+            const starRating = parseInt(star.getAttribute('data-rating'));
+
+            if (starRating <= this.currentRating) {
                 star.classList.add('active');
+                star.style.color = '#ffc107';
+                star.style.transform = 'scale(1.1)';
             } else {
                 star.classList.remove('active');
-            }
-        });
-    }
-    
-    highlightStars(rating) {
-        const stars = document.querySelectorAll('#ratingStars i');
-        stars.forEach((star, index) => {
-            if (index < rating) {
-                star.style.color = '#ffc107';
-                star.style.transform = 'scale(1.2)';
-            } else {
                 star.style.color = '#ddd';
                 star.style.transform = 'scale(1)';
             }
         });
     }
-    
+
+    highlightStars(rating) {
+        const stars = document.querySelectorAll('#ratingStars i');
+
+        stars.forEach((star, index) => {
+            const starRating = parseInt(star.getAttribute('data-rating'));
+
+            if (starRating <= rating) {
+                star.style.color = '#ffc107';
+                star.style.transform = 'scale(1.2)';
+                star.style.textShadow = '0 0 10px rgba(255, 193, 7, 0.5)';
+            } else {
+                star.style.color = '#ddd';
+                star.style.transform = 'scale(1)';
+                star.style.textShadow = 'none';
+            }
+        });
+    }
+
+    showRatingFeedback(rating) {
+        // Show visual feedback when rating is selected
+        const feedbackTexts = {
+            1: 'Sangat Tidak Puas 😞',
+            2: 'Kurang Puas 😐',
+            3: 'Cukup 😊',
+            4: 'Puas 😃',
+            5: 'Sangat Puas! 🤩'
+        };
+
+        // Find or create feedback element
+        let feedback = document.getElementById('ratingFeedback');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.id = 'ratingFeedback';
+            feedback.style.cssText = `
+                text-align: center;
+                margin: 10px 0;
+                font-weight: bold;
+                font-size: 1.1rem;
+                color: #667eea;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            `;
+
+            const modalBody = document.querySelector('.modal-body');
+            const ratingStars = document.getElementById('ratingStars');
+            if (modalBody && ratingStars) {
+                modalBody.insertBefore(feedback, ratingStars.nextSibling);
+            }
+        }
+
+        feedback.textContent = feedbackTexts[rating] || 'Rating dipilih';
+        feedback.style.opacity = '1';
+
+        // Animate feedback
+        feedback.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+            feedback.style.transform = 'scale(1)';
+        }, 200);
+    }
+
     async submitQuickRating(rating) {
+        console.log(`⚡ Quick rating submitted: ${rating}`);
+
         try {
             const response = await fetch('/api/submit-rating/', {
                 method: 'POST',
@@ -381,30 +496,63 @@ Atau <button onclick="chatApp.showRatingModal()" class="text-link">buka form rat
                     session_id: this.sessionId
                 })
             });
-            
+
             const data = await response.json();
-            
+
             if (response.ok && data.status === 'success') {
                 this.addMessage(data.response, 'bot');
                 this.showToast('Terima Kasih!', `Rating ${rating} bintang telah dikirim`, 'success');
+
+                // Animate the clicked button
+                const clickedBtn = event.target;
+                if (clickedBtn) {
+                    clickedBtn.style.transform = 'scale(1.1)';
+                    clickedBtn.style.backgroundColor = '#4CAF50';
+                    setTimeout(() => {
+                        clickedBtn.style.transform = 'scale(1)';
+                    }, 300);
+                }
             } else {
                 this.showToast('Error', 'Gagal mengirim rating', 'error');
             }
         } catch (error) {
-            console.error('Rating submission error:', error);
+            console.error('Quick rating error:', error);
             this.showToast('Error', 'Koneksi bermasalah', 'error');
         }
     }
-    
+
     async submitRating() {
+        console.log(`🌟 Submitting rating: ${this.currentRating}`);
+
+        // Validation
         if (this.currentRating === 0) {
             this.showToast('Peringatan', 'Silakan pilih rating terlebih dahulu', 'error');
+
+            // Highlight stars untuk menarik perhatian
+            const ratingStars = document.getElementById('ratingStars');
+            if (ratingStars) {
+                ratingStars.style.animation = 'shake 0.5s ease';
+                setTimeout(() => {
+                    ratingStars.style.animation = '';
+                }, 500);
+            }
+
+            console.log('❌ Validation failed: No rating selected');
             return;
         }
-        
+
         const comment = document.getElementById('ratingComment');
-        const commentText = comment ? comment.value : '';
-        
+        const commentText = comment ? comment.value.trim() : '';
+
+        console.log(`Submitting: Rating=${this.currentRating}, Comment="${commentText}"`);
+
+        // Show loading state
+        const submitBtn = document.querySelector('.btn-primary');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Mengirim...';
+        }
+
         try {
             const response = await fetch('/api/submit-rating/', {
                 method: 'POST',
@@ -418,29 +566,43 @@ Atau <button onclick="chatApp.showRatingModal()" class="text-link">buka form rat
                     session_id: this.sessionId
                 })
             });
-            
+
+            console.log(`API Response status: ${response.status}`);
+
             const data = await response.json();
-            
+            console.log('API Response data:', data);
+
             if (response.ok && data.status === 'success') {
+                // Success
                 this.closeRatingModal();
                 this.addMessage(data.response, 'bot');
                 this.showToast('Terima Kasih!', `Rating ${this.currentRating} bintang telah dikirim`, 'success');
+
+                console.log('✅ Rating submitted successfully');
             } else {
-                this.showToast('Error', 'Gagal mengirim rating', 'error');
+                // Error
+                this.showToast('Error', data.error || 'Gagal mengirim rating', 'error');
+                console.error('❌ Server error:', data);
             }
         } catch (error) {
-            console.error('Rating submission error:', error);
+            console.error('❌ Network error:', error);
             this.showToast('Error', 'Koneksi bermasalah', 'error');
+        } finally {
+            // Reset submit button
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Kirim Rating';
+            }
         }
     }
-    
+
     showToast(title, message, type = 'success') {
         const toastContainer = document.getElementById('toastContainer') || this.createToastContainer();
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        
+
         const icon = type === 'success' ? 'fa-check' : 'fa-exclamation-triangle';
-        
+
         toast.innerHTML = `
             <div class="toast-icon">
                 <i class="fas ${icon}"></i>
@@ -450,16 +612,16 @@ Atau <button onclick="chatApp.showRatingModal()" class="text-link">buka form rat
                 <div class="toast-message">${message}</div>
             </div>
         `;
-        
+
         toastContainer.appendChild(toast);
-        
+
         // Auto remove after 4 seconds
         setTimeout(() => {
             toast.style.animation = 'slideOutRight 0.3s ease';
             setTimeout(() => toast.remove(), 300);
         }, 4000);
     }
-    
+
     createToastContainer() {
         const container = document.createElement('div');
         container.id = 'toastContainer';
@@ -472,7 +634,7 @@ Atau <button onclick="chatApp.showRatingModal()" class="text-link">buka form rat
         document.body.appendChild(container);
         return container;
     }
-    
+
     getCSRFToken() {
         const token = document.querySelector('[name=csrfmiddlewaretoken]');
         return token ? token.value : '';
@@ -511,7 +673,7 @@ function submitRating() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🎉 DOM loaded, starting ChatApp...');
     window.chatApp = new ChatApp();
-    
+
     // Add loading animations
     const elements = document.querySelectorAll('.chat-container, .side-panel');
     elements.forEach((el, index) => {
