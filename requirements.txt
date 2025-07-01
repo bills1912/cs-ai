@@ -1,0 +1,72 @@
+# requirements.txt - Optimized for Python 3.13.5
+
+# Django Framework
+Django==5.0.9
+djangorestframework==3.14.0
+
+# OpenAI Integration
+openai==1.54.4
+
+# Environment Management
+python-dotenv==1.0.1
+
+# Real-time Features (WebSocket support)
+channels==4.1.0
+daphne==4.1.2
+
+# Database & ORM
+psycopg2  # PostgreSQL support (optional)
+
+# Image Processing (for future file upload features)
+Pillow==10.4.0
+
+# Utilities
+requests==2.32.3
+python-dateutil==2.9.0
+
+# Security & Validation
+cryptography==43.0.3
+
+# Development & Debugging (optional)
+django-debug-toolbar==4.4.6
+
+# CORS handling (for API access)
+django-cors-headers==4.4.0
+
+# Timezone support
+pytz==2024.2
+
+# JSON Web Token (for authentication if needed)
+PyJWT==2.9.0
+
+# HTTP client improvements
+httpx==0.27.2
+
+# Async support
+asgiref==3.8.1
+
+# Additional utilities
+six==1.16.0
+urllib3==2.2.3
+
+# Performance monitoring (optional)
+django-extensions==3.2.3
+
+# Static files handling for production
+whitenoise==6.8.2
+
+# Environment-specific packages
+# Uncomment based on your needs:
+
+# For production deployment:
+gunicorn==23.0.0
+redis==5.2.0  # For Redis as channel layer backend
+
+# For testing:
+pytest==8.3.3
+pytest-django==4.9.0
+factory-boy==3.3.1
+
+# For data processing:
+pandas==2.2.3
+numpy==2.1.3

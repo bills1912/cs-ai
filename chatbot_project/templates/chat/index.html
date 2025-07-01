@@ -1,0 +1,240 @@
+{% extends 'base.html' %} {% block content %}
+<div class="app-container">
+  <!-- Background Effects -->
+  <div class="bg-effects">
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="floating-shape shape-4"></div>
+  </div>
+
+  <!-- Main Chat Interface -->
+  <div class="chat-wrapper">
+    <div class="chat-container">
+      <!-- Header -->
+      <div class="chat-header">
+        <div class="header-content">
+          <div class="company-info">
+            <div class="company-logo">
+              <i class="fas fa-shipping-fast"></i>
+            </div>
+            <div class="company-details">
+              <h1>FastDelivery Express</h1>
+              <p>AI Customer Service</p>
+            </div>
+          </div>
+          <div class="status-indicators">
+            <div class="status-dot online"></div>
+            <span class="status-text">Online</span>
+          </div>
+        </div>
+        <div class="header-stats">
+          <div class="stat-item">
+            <i class="fas fa-clock"></i>
+            <span>Response < 2s</span>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-shield-alt"></i>
+            <span>24/7 Available</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages Area -->
+      <div class="messages-container" id="messagesContainer">
+        <div class="welcome-message">
+          <div class="welcome-avatar">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="welcome-content">
+            <h3>Selamat datang! 👋</h3>
+            <p>
+              Saya adalah asisten AI FastDelivery Express yang siap membantu
+              Anda 24/7.
+            </p>
+            <div class="quick-actions">
+              <button
+                class="quick-btn"
+                onclick="sendQuickMessage('Cek status pengiriman')"
+              >
+                <i class="fas fa-search"></i> Cek Status
+              </button>
+              <button
+                class="quick-btn"
+                onclick="sendQuickMessage('Paket saya rusak')"
+              >
+                <i class="fas fa-exclamation-triangle"></i> Lapor Masalah
+              </button>
+              <button
+                class="quick-btn"
+                onclick="sendQuickMessage('Paket terlambat')"
+              >
+                <i class="fas fa-clock"></i> Keterlambatan
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="typing-indicator" id="typingIndicator">
+        <div class="typing-avatar">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="typing-content">
+          <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <span class="typing-text">AI sedang mengetik...</span>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-container">
+        <div class="input-wrapper">
+          <div class="input-field">
+            <input
+              type="text"
+              id="messageInput"
+              placeholder="Ketik pesan Anda di sini..."
+              autocomplete="off"
+            />
+            <button class="attach-btn" title="Attach File">
+              <i class="fas fa-paperclip"></i>
+            </button>
+          </div>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+        <div class="input-suggestions">
+          <span
+            class="suggestion-tag"
+            onclick="insertSuggestion('FDE123456789')"
+          >
+            <i class="fas fa-barcode"></i> Contoh Resi
+          </span>
+          <span
+            class="suggestion-tag"
+            onclick="insertSuggestion('Paket belum sampai')"
+          >
+            <i class="fas fa-box"></i> Belum Sampai
+          </span>
+          <span
+            class="suggestion-tag"
+            onclick="insertSuggestion('Rating pelayanan')"
+          >
+            <i class="fas fa-star"></i> Rating
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="side-panel">
+      <div class="panel-header">
+        <h3><i class="fas fa-info-circle"></i> Bantuan Cepat</h3>
+      </div>
+      <div class="panel-content">
+        <div class="help-item">
+          <div class="help-icon">
+            <i class="fas fa-search"></i>
+          </div>
+          <div class="help-text">
+            <h4>Cek Status Paket</h4>
+            <p>Masukkan nomor resi untuk melacak paket Anda</p>
+          </div>
+        </div>
+        <div class="help-item">
+          <div class="help-icon">
+            <i class="fas fa-phone"></i>
+          </div>
+          <div class="help-text">
+            <h4>Call Center</h4>
+            <p>1500-888 (24 Jam)</p>
+          </div>
+        </div>
+        <div class="help-item">
+          <div class="help-icon">
+            <i class="fas fa-map-marker-alt"></i>
+          </div>
+          <div class="help-text">
+            <h4>Cabang Terdekat</h4>
+            <p>Temukan lokasi kantor cabang</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics -->
+      <div class="stats-panel">
+        <h4><i class="fas fa-chart-line"></i> Statistik Hari Ini</h4>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-value">1,247</div>
+            <div class="stat-label">Paket Terkirim</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">98.5%</div>
+            <div class="stat-label">Success Rate</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">4.8</div>
+            <div class="stat-label">Rating Rata-rata</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rating Modal -->
+  <div class="modal-overlay" id="ratingModal" style="display: none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fas fa-star"></i> Berikan Rating</h3>
+        <button class="modal-close" onclick="closeRatingModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Bagaimana pengalaman Anda dengan layanan FastDelivery Express?</p>
+        <div class="rating-stars" id="ratingStars">
+          <i class="fas fa-star" data-rating="1"></i>
+          <i class="fas fa-star" data-rating="2"></i>
+          <i class="fas fa-star" data-rating="3"></i>
+          <i class="fas fa-star" data-rating="4"></i>
+          <i class="fas fa-star" data-rating="5"></i>
+        </div>
+        <textarea
+          placeholder="Berikan komentar (opsional)"
+          id="ratingComment"
+          rows="4"
+        ></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeRatingModal()">
+          Batal
+        </button>
+        <button class="btn btn-primary" onclick="submitRating()">
+          Kirim Rating
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+</div>
+
+<!-- Loading Screen -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-content">
+    <div class="loading-spinner">
+      <i class="fas fa-shipping-fast"></i>
+    </div>
+    <h3>FastDelivery Express</h3>
+    <p>Menghubungkan ke AI Customer Service...</p>
+  </div>
+</div>
+{% endblock %}
